@@ -1,0 +1,365 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Banking System",
+    "version": "1.0.11"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "user",
+      "description": "Operations about user"
+    },
+    {
+      "name": "transaction",
+      "description": "Operations about transactions"
+    }
+  ],
+  "paths": {
+    "/v1/auth/login": {
+      "post": {
+        "tags": ["user"],
+        "summary": "User Login",
+        "description": "Authenticate a user and generate a token.",
+        "operationId": "userLogin",
+        "requestBody": {
+          "description": "User login credentials",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        },
+                        "token": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/v1/auth/whoami": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Get Current User",
+        "description": "Get information about the currently logged-in user.",
+        "operationId": "getCurrentUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "tags": ["user"],
+        "summary": "User Registration",
+        "description": "Register a new user.",
+        "operationId": "userRegistration",
+        "requestBody": {
+          "description": "User registration data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions": {
+      "post": {
+        "tags": ["transaction"],
+        "summary": "Create Transaction",
+        "description": "Create a new transaction.",
+        "operationId": "createTransaction",
+        "requestBody": {
+          "description": "Transaction data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sourceAccountId": {
+                    "type": "integer"
+                  },
+                  "destinationAccountId": {
+                    "type": "integer"
+                  },
+                  "amount": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["transaction"],
+        "summary": "Get Transaction",
+        "description": "Get all transaction.",
+        "operationId": "getTransaction",
+        "responses": {
+          "201": {
+            "description": "Transaction successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions/{id}": {
+      "get": {
+        "tags": ["transaction"],
+        "summary": "Get Transaction by ID",
+        "description": "Get details of a specific transaction by ID.",
+        "operationId": "getTransactionById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the transaction to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "sourceAccountId": {
+            "type": "integer"
+          },
+          "destinationAccountId": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "Type token without 'Bearer'",
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  }
+}
