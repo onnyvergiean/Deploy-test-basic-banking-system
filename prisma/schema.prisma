@@ -23,9 +23,11 @@ model User {
 
 model Profile{
   id        Int      @id @default(autoincrement())
-  identity_type String
-  identity_number Int
-  address String
+  identity_type String?
+  identity_number Int?
+  address String?
+  image String?
+  imageId String?
   user User @relation(fields: [userId], references: [id])
   userId Int @unique
 }
