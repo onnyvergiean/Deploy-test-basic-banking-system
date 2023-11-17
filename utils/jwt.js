@@ -7,7 +7,6 @@ async function auth(req, res, next) {
     return res.status(401).json({
       status: 'failed',
       message: "you're not authorized!",
-      data: null,
     });
   }
 
@@ -23,7 +22,6 @@ async function auth(req, res, next) {
         status: 'failed',
         message: "you're not authorized!",
         err: err.message,
-        data: null,
       });
     }
     req.user = decoded;
