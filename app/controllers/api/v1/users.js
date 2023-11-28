@@ -8,8 +8,15 @@ const defaultImageUrl = path.join(
   __dirname,
   '../../../../public/images/default_image.png'
 );
+const { DateTime } = require('luxon');
 const imageKit = require('../../../../utils/imagekit');
 const { encryptPassword, checkPassword } = require('../../../../utils/auth');
+const { generateResetToken } = require('../../../../utils/generateToken');
+const {
+  sendRegistrationEmail,
+  sendResetPasswordEmail,
+  sendSuccessResetEmail,
+} = require('../../../../utils/mailer');
 const prisma = new PrismaClient();
 
 const createUser = async (req, res) => {
@@ -86,6 +93,8 @@ const createUser = async (req, res) => {
       },
     });
 
+    await sendRegistrationEmail(email, name);
+
     return res.status(201).json({
       status: 'success',
       code: 200,
@@ -93,7 +102,6 @@ const createUser = async (req, res) => {
       data: createUser,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       status: 'error',
       code: 500,
@@ -368,7 +376,6 @@ const updateProfileAndImage = async (req, res) => {
       data: updatedProfile,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       status: 'error',
       code: 500,
@@ -413,6 +420,124 @@ const deleteProfileImage = async (req, res) => {
       data: updatedProfile,
     });
   } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      code: 500,
+      message: 'Internal server error',
+    });
+  }
+};
+
+const mailResetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const resetToken = await generateResetToken();
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        code: 404,
+        message: 'User not found',
+      });
+    }
+
+    const resetTokenExpiry = DateTime.local()
+      .setZone('Asia/Jakarta')
+      .plus({ hours: 1 });
+
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        resetToken,
+        resetTokenExpiry,
+      },
+    });
+
+    await sendResetPasswordEmail(email, resetToken, user.name);
+
+    return res.status(200).json({
+      status: 'success',
+      code: 200,
+      message: 'Reset password email sent successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      code: 500,
+      message: 'Internal server error',
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { password, email, token } = req.body;
+  if (!email || !token || !password) {
+    ({ email, token } = req.query);
+  }
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        code: 404,
+        message: 'User not found',
+      });
+    }
+
+    if (user.resetToken !== token) {
+      return res.status(400).json({
+        status: 'error',
+        code: 400,
+        message: 'Bad Request: Token is invalid',
+      });
+    }
+
+    const isTokenExpired =
+      DateTime.local()
+        .setZone('Asia/Jakarta')
+        .diff(DateTime.fromISO(user.resetTokenExpiry), 'hours').hours > 0;
+
+    if (isTokenExpired) {
+      return res.status(400).json({
+        status: 'error',
+        code: 400,
+        message: 'Bad Request: Token is expired please request a new one',
+      });
+    }
+
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password: await encryptPassword(password),
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    await sendSuccessResetEmail(email, user.name);
+
+    return res.status(200).json({
+      status: 'success',
+      code: 200,
+      message: 'Password reset successfully',
+    });
+  } catch (error) {
     console.error(error);
     return res.status(500).json({
       status: 'error',
@@ -430,4 +555,6 @@ module.exports = {
   deleteUser,
   updateProfileAndImage,
   deleteProfileImage,
+  mailResetPassword,
+  resetPassword,
 };
