@@ -12,7 +12,10 @@ router.get('/reset-password', (req, res) => {
   res.render('newPassword.ejs', { email, token });
 });
 router.put('/v1/users/mail-reset-password', controller.users.mailResetPassword);
-router.put('/v1/users/reset-password', controller.users.resetPassword);
+router.put('/v1/users/reset-password', (req, res) => {
+  req.io.emit('notification', 'Password Berhasil Diubah');
+  controller.users.resetPassword(req, res);
+});
 
 router.get('/v1/users', controller.users.getUsers);
 router.post('/v1/users', multer.single('image'), controller.users.createUser);

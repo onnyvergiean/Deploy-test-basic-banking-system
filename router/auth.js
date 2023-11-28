@@ -13,7 +13,10 @@ router.get('/register', (req, res) => {
   res.render('register.ejs');
 });
 
-router.post('/register', controller.auth.registerForm);
+router.post('/register', (req, res) => {
+  req.io.emit('notification', 'Hi Berhasil Register User');
+  controller.auth.registerForm(req, res);
+});
 
 router.get('/login', (req, res) => {
   res.render('login.ejs');

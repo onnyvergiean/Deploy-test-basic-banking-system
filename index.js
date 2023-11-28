@@ -5,8 +5,10 @@ const Sentry = require('@sentry/node');
 const { ProfilingIntegration } = require('@sentry/profiling-node');
 const app = express();
 const PORT = 3000;
-const routers = require('./router');
 const path = require('path');
+const http = require('http').Server(app);
+const routers = require('./router');
+const io = require('./utils/io')(http);
 const session = require('express-session');
 const flash = require('express-flash');
 // const passport = require('./utils/passport');
@@ -14,6 +16,9 @@ const swaggerJSON = require('./openapi.json');
 const swaggerUI = require('swagger-ui-express');
 const methodOverride = require('method-override');
 
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
@@ -50,6 +55,15 @@ app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerJSON));
 app.get('/docs', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
 });
+
+app.use((req, res, next) => {
+  req.io = io;
+  return next();
+});
+http.listen(3000, () => {
+  console.log('listened on port 3000');
+});
+
 app.use(routers);
 
 app.use(Sentry.Handlers.errorHandler());
@@ -57,10 +71,6 @@ app.use(Sentry.Handlers.errorHandler());
 app.use(function onError(err, req, res, next) {
   res.statusCode = 500;
   res.end(res.sentry + '\n');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

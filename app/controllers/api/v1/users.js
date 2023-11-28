@@ -17,6 +17,7 @@ const {
   sendResetPasswordEmail,
   sendSuccessResetEmail,
 } = require('../../../../utils/mailer');
+
 const prisma = new PrismaClient();
 
 const createUser = async (req, res) => {

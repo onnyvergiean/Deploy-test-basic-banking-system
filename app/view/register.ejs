@@ -19,4 +19,25 @@
 
         <input type="submit" value="Submit">
     </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const socket = io();
+
+            socket.on('notification', function (data) {
+                alert(data);
+            });
+
+            // Add a listener for the form submission
+            document.getElementById('registerForm').addEventListener('submit', function (event) {
+                // Prevent the default form submission
+                event.preventDefault();
+
+                // You can perform additional actions here if needed
+
+                // Finally, submit the form via JavaScript
+                this.submit();
+            });
+        });
+    </script>
 </form>
