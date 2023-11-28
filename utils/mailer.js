@@ -1,7 +1,6 @@
 const nodeMailer = require('nodemailer');
 const ejs = require('ejs');
 const path = require('path');
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 const transporter = nodeMailer.createTransport({
   service: 'gmail',
@@ -30,7 +29,7 @@ const sendResetPasswordEmail = async (toEmail, resetToken, name) => {
       templatePath,
       {
         name,
-        url: `${BASE_URL}/reset-password?email=${toEmail}&token=${resetToken}`,
+        url: `${process.env.BASE_URL}/reset-password?email=${toEmail}&token=${resetToken}`,
       },
       (err, renderedTemplate) => {
         if (err) {
