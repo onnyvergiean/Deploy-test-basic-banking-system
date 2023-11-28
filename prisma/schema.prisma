@@ -18,6 +18,8 @@ model User {
   password  String
   profile Profile?
   bankAccount BankAccount[]
+  resetToken String? @unique
+  resetTokenExpiry DateTime?
   
 }
 
